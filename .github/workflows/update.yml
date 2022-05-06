@@ -1,9 +1,13 @@
 name: update
-on: [workflow_dispatch]
+on:
+  schedule:
+    - cron: '0 * * * *'
+  workflow_dispatch:
 permissions: write-all
 jobs:
   check:
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/automatic-updates'
     outputs:
       updated: ${{ steps.update-result.outputs.updated }}
     steps:
@@ -68,15 +72,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push changes
-        run: |
-          git add -A
-          git commit -m "Update to v{{ env.PACKAGE_VERSION }}"
-          git tag -fa v{{ env.PACKAGE_VERSION }} -m "auto-update"
-          git tag -fa latest-v1 -m "auto-update to v{{ env.PACKAGE_VERSION }}"
-          git push
-          git push origin latest-v1 -f
-
       - name: Set variables
         run: |
           PACKAGE_VERSION=$(cat package-version.txt)
@@ -84,6 +79,15 @@ jobs:
 
           PREV_PACKAGE_VERSION=$(cat previous-package-version.txt)
           echo "PREV_PACKAGE_VERSION=$PREV_PACKAGE_VERSION" >> $GITHUB_ENV
+
+      - name: Push changes
+        run: |
+          git add -A
+          git commit -m "Update to v${{ env.PACKAGE_VERSION }}"
+          git tag -fa v${{ env.PACKAGE_VERSION }} -m "auto-update"
+          git tag -fa latest-v1 -m "auto-update to v${{ env.PACKAGE_VERSION }}"
+          git push
+          git push origin latest-v1 -f
       
       - name: Update release
         run: gh release edit latest-v1 --tag latest-v1 --target automatic-updates --title "Latest (v${{ env.PACKAGE_VERSION }})"
