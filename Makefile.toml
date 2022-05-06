@@ -1,0 +1,12 @@
+# See https://sagiegurari.github.io/cargo-make/
+
+[config]
+skip_core_tasks = true
+
+[tasks.download-api-dump]
+script_runner = "@duckscript"
+script = '''
+wget -O "api-dump-split.remodel.json" "https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/roblox/Mini-API-Dump.json"
+wget -O "roblox-version.txt" "https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/roblox/version.txt"
+exec remodel run api-dump-split.remodel.lua
+'''

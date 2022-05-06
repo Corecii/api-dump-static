@@ -1,0 +1,9 @@
+[package]
+name = "corecii/api-dump-static"
+version = "1.0.525"
+description = "A super-simple enum library"
+license = "MIT"
+registry = "https://github.com/UpliftGames/wally-index"
+realm = "shared"
+
+[dependencies]

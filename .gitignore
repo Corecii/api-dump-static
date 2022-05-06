@@ -1,0 +1,13 @@
+/packages/
+.vscode/
+
+roblox.toml
+
+/*.rbxlx
+/*.rbxm
+
+/build/
+
+/node_modules
+
+api-dump-split.remodel.json

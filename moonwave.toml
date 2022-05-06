@@ -1,0 +1,10 @@
+title = "API Dump Static"
+
+gitSourceBranch = "main"
+
+[docusaurus]
+organizationName = "Shae A"
+projectName = "api-dump-static"
+url = "https://corecii.github.io"
+baseUrl = "/api-dump-static/"
+tagline = "A static Roblox API dump"

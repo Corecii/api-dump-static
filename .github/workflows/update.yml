@@ -1,0 +1,24 @@
+name: update
+on: [push, pull_request]
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out Repository
+        uses: actions/checkout@v2
+
+      - name: Install Foreman
+        uses: Roblox/setup-foreman@v1
+        with:
+          version: "^1.0.0"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install MakeRS
+        uses: davidB/rust-cargo-make@v1
+      
+      - name: Update Types
+        run: makers download-api-dump
+
+      - name: Compare
+        run: |
+          
