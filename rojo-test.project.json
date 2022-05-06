@@ -5,7 +5,13 @@
     "ReplicatedStorage": {
       "$className": "ReplicatedStorage",
       "lib": {
-        "$path": "src/lib"
+        "$path": "src/lib",
+        "robloxVersion": {
+          "$path": "roblox-version.txt"
+        },
+        "packageVersion": {
+          "$path": "package-version.txt"
+        }
       }
     }
   }

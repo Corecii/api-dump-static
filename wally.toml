@@ -5,5 +5,8 @@ description = "A statically-generated API dump"
 license = "MIT"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
+exclude = ["*"]
+include = ["wally.toml", "src", "src/**", "default.project.json", "roblox-version.txt",
+	"package-version.txt", "README.md", "moonwave.toml", "foreman.toml", ".gitignore", ".editorconfig"]
 
 [dependencies]

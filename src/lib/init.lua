@@ -239,7 +239,7 @@ function Class.Subclasses(self: Class): { [string]: Class }
 				super._other.subclasses[className] = class
 			end
 		end
-		for className, class in pairs(classes) do
+		for _className, class in pairs(classes) do
 			if class._other.subclasses == nil then
 				class._other.subclasses = {}
 			end
@@ -306,15 +306,29 @@ table.freeze(classes)
 	@within ApiDump
 	The dictionary of classes
 ]=]
+ApiDump.Classes = classes
 
 --[=[
 	@prop Raw ApiDumpRaw
 	@within ApiDump
 	The raw API dump
 ]=]
-
-ApiDump.Classes = classes
-
 ApiDump.Raw = ApiDumpRaw
+
+--[=[
+	@prop RobloxVersion string
+	@within ApiDump
+	The version of Roblox this API dump is for
+]=]
+ApiDump.RobloxVersion = script.robloxVersion.Value
+
+--[=[
+	@prop PackageVersion string
+	@within ApiDump
+	The version of the package
+]=]
+ApiDump.PackageVersion = script.packageVersion.Value
+
+table.freeze(ApiDump)
 
 return ApiDump
