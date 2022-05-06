@@ -1,6 +1,6 @@
 [package]
 name = "corecii/api-dump-static"
-version = "0.0.5250378"
+version = "0.0.5240408"
 description = "A statically-generated API dump"
 license = "MIT"
 registry = "https://github.com/UpliftGames/wally-index"
