@@ -7,7 +7,6 @@ permissions: write-all
 jobs:
   check:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/automatic-updates'
     outputs:
       updated: ${{ steps.update-result.outputs.updated }}
     steps:
