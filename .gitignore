@@ -11,3 +11,4 @@ roblox.toml
 /node_modules
 
 api-dump-split.remodel.json
+previous-package-version.txt

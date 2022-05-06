@@ -1,11 +1,13 @@
 name: update
-on: [push, pull_request]
+on: [workflow_dispatch]
 jobs:
   update:
     runs-on: ubuntu-latest
     steps:
       - name: Check out Repository
         uses: actions/checkout@v2
+        with:
+          ref: automatic-updates
 
       - name: Install Foreman
         uses: Roblox/setup-foreman@v1
@@ -13,12 +15,30 @@ jobs:
           version: "^1.0.0"
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install MakeRS
+      - name: Install cargo-make
         uses: davidB/rust-cargo-make@v1
       
-      - name: Update Types
+      - name: Update types
         run: makers download-api-dump
 
-      - name: Compare
+      - name: Update package
+        run: remodel run update-package.remodel.lua
+
+      - name: Set variables
         run: |
+          PACKAGE_VERSION=$(cat package-version.txt)
+          echo "PACKAGE_VERSION=$PACKAGE_VERSION" >> $GITHUB_ENV
+
+          PREV_PACKAGE_VERSION=$(cat previous-package-version.txt)
+          echo "PREV_PACKAGE_VERSION=$PREV_PACKAGE_VERSION" >> $GITHUB_ENV
+      
+      - name: Update release
+        run: gh release edit latest --tag latest-v1 --target automatic-updates
+          
+      - name: Build library
+        run: rojo build -o ApiDumpStatic.rbxm default.project.json
+        
+      - name: Upload release asset
+        run: gh release upload latest-v1 ApiDumpStatic.rbxm --clobber
+
           
