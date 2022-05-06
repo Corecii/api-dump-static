@@ -5,6 +5,10 @@ local function capture(cmd)
 	return result
 end
 
+local function run(cmd)
+	return assert(os.execute(cmd), "Command failed: " .. cmd)
+end
+
 local function read(path)
 	local file = io.open(path, "rb")
 	if not file then
@@ -19,6 +23,12 @@ local diff = capture("git diff --numstat roblox-version.txt")
 
 if #diff == 0 then
 	print("Roblox version has not changed; not releasing new package version.")
+	local marker_file = assert(io.open("no-changes", "w"))
+	marker_file:close()
+	return
+end
+
+if (...) == "check" then
 	return
 end
 
@@ -40,11 +50,3 @@ os.rename("package-version.txt", "previous-package-version.txt")
 local marker_file = assert(io.open("package-version.txt", "w"))
 marker_file:write(new_version)
 marker_file:close()
-
-capture("git add -A")
-capture('git commit --m "Update to v' .. new_version)
-capture("git tag -a v" .. new_version)
-capture("git tag -fa latest-v1")
-
--- capture("wally install")
--- capture("wally publish")

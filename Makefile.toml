@@ -10,3 +10,9 @@ wget -O "api-dump-split.remodel.json" "https://raw.githubusercontent.com/Maximum
 wget -O "roblox-version.txt" "https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/roblox/version.txt"
 exec remodel run api-dump-split.remodel.lua
 '''
+
+[tasks.download-version-file]
+script_runner = "@duckscript"
+script = '''
+wget -O "roblox-version.txt" "https://raw.githubusercontent.com/MaximumADHD/Roblox-Client-Tracker/roblox/version.txt"
+'''

@@ -1,5 +1,6 @@
 /packages/
 .vscode/
+.foreman-install/
 
 roblox.toml
 
@@ -12,3 +13,5 @@ roblox.toml
 
 api-dump-split.remodel.json
 previous-package-version.txt
+no-changes
+globalTypes.d.lua

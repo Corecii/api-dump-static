@@ -6,6 +6,12 @@ local ApiDump = {}
 local classes: { [string]: Class } = {}
 local processedSubclasses = false
 
+--[=[
+	@class Class
+
+	Represents the API dump for a class / instance type.
+]=]
+
 local Class = {}
 Class.__index = Class
 
@@ -114,6 +120,8 @@ function Class._getCombined(
 			combined[key] = value
 		end
 
+		table.freeze(combined)
+
 		self._combined[target] = combined
 	end
 
@@ -124,27 +132,70 @@ end
 -- incapable of knowing that GetCombined returns the wanted type instead of
 -- Member.
 
+--[=[
+	Returns the properties this class has, includes those of its superclasses
+
+	@method Properties
+	@within Class
+	@return { [string]: Property }
+]=]
 function Class.Properties(self: Class): { [string]: Property }
 	return self:_getCombined("properties") :: any
 end
 
+--[=[
+	Returns the methods this class has, includes those of its superclasses
+
+	@method Methods
+	@within Class
+	@return { [string]: Method }
+]=]
 function Class.Methods(self: Class): { [string]: Method }
 	return self:_getCombined("methods") :: any
 end
 
+--[=[
+	Returns the events this class has, includes those of its superclasses
+
+	@method Events
+	@within Class
+	@return { [string]: Event }
+]=]
 function Class.Events(self: Class): { [string]: Event }
 	return self:_getCombined("events") :: any
 end
 
+--[=[
+	Returns the callbacks this class has, includes those of its superclasses
+
+	@method Callbacks
+	@within Class
+	@return { [string]: Callback }
+]=]
 function Class.Callbacks(self: Class): { [string]: Callback }
 	return self:_getCombined("callbacks") :: any
 end
 
+--[=[
+	Returns all members this class has, includes those of its superclasses
+
+	@method Members
+	@within Class
+	@return { [string]: Member }
+]=]
 function Class.Members(self: Class): { [string]: Member }
 	return self:_getCombined("members") :: any
 end
 
-function Class.HasTag(self: Class, tag): boolean
+--[=[
+	Returns whether this class has a particular tag
+
+	@method HasTag
+	@within Class
+	@param tag string
+	@return boolean
+]=]
+function Class.HasTag(self: Class, tag: string): boolean
 	if not self._other.tagsSet then
 		local set = {}
 		for _, tagInner in ipairs(self.Tags) do
@@ -157,11 +208,25 @@ function Class.HasTag(self: Class, tag): boolean
 	return self._other.tagsSet[tag] or false
 end
 
+--[=[
+	Returns the superclass of this class
+
+	@method Superclass
+	@within Class
+	@return Class?
+]=]
 function Class.Superclass(self: Class): Class?
 	return classes[self.SuperName]
 end
 
-function Class.Subclasses(self: Class)
+--[=[
+	Returns a dictionary of this class's subclasses.
+
+	@method Subclasses
+	@within Class
+	@return { [string]: Class }
+]=]
+function Class.Subclasses(self: Class): { [string]: Class }
 	if not processedSubclasses then
 		for className, class in pairs(classes) do
 			local super = class:Superclass()
@@ -174,6 +239,13 @@ function Class.Subclasses(self: Class)
 				super._other.subclasses[className] = class
 			end
 		end
+		for className, class in pairs(classes) do
+			if class._other.subclasses == nil then
+				class._other.subclasses = {}
+			end
+
+			table.freeze(class._other.subclasses :: any)
+		end
 
 		processedSubclasses = true
 	end
@@ -181,7 +253,17 @@ function Class.Subclasses(self: Class)
 	return self._other.subclasses or {}
 end
 
-function Class.GetPropertyDefault(self: Class, propertyName: string)
+--[=[
+	Returns the default value for one of this class's properties.
+
+	@method GetPropertyDefault
+	@within Class
+	@param property string
+	@return any
+]=]
+function Class.GetPropertyDefault(self: Class, property: string): any
+	assert(self:Properties()[property] ~= nil, "Class " .. self.Name .. " does not have " .. tostring(property))
+
 	if not self._other.defaultInstance then
 		if self:HasTag("NotCreatable") then
 			return
@@ -198,12 +280,12 @@ function Class.GetPropertyDefault(self: Class, propertyName: string)
 	end
 	assert(self._other.defaultProperties, "always") -- typechecker assert
 
-	if self._other.defaultProperties[propertyName] == nil then
+	if self._other.defaultProperties[property] == nil then
 		-- must be cast to support string indexing
-		self._other.defaultProperties[propertyName] = (self._other.defaultInstance :: any)[propertyName]
+		self._other.defaultProperties[property] = (self._other.defaultInstance :: any)[property]
 	end
 
-	return self._other.defaultProperties[propertyName]
+	return self._other.defaultProperties[property]
 end
 
 table.freeze(Class)
@@ -214,10 +296,25 @@ end
 
 table.freeze(classes)
 
+--[=[
+	@class ApiDump
+	A static API dump
+]=]
+
+--[=[
+	@prop Classes { [string]: Class }
+	@within ApiDump
+	The dictionary of classes
+]=]
+
+--[=[
+	@prop Raw ApiDumpRaw
+	@within ApiDump
+	The raw API dump
+]=]
+
 ApiDump.Classes = classes
 
 ApiDump.Raw = ApiDumpRaw
-
-table.freeze(ApiDumpRaw)
 
 return ApiDump

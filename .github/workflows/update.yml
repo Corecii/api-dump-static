@@ -1,7 +1,44 @@
 name: update
 on: [workflow_dispatch]
+permissions: write-all
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    outputs:
+      updated: ${{ steps.update-result.outputs.updated }}
+    steps:
+      - name: Check out Repository
+        uses: actions/checkout@v2
+        with:
+          ref: automatic-updates
+
+      - name: Install Foreman
+        uses: Roblox/setup-foreman@v1
+        with:
+          version: "^1.0.0"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install cargo-make
+        uses: davidB/rust-cargo-make@v1
+          
+      - name: Download version file
+        run: cargo make download-version-file
+
+      - name: Update package
+        run: remodel run update-package.remodel.lua check
+        
+      - id: update-result
+        run: |
+          if test -f "no-changes"; then
+            echo "::set-output name=updated::false"
+          else
+            echo "::set-output name=updated::true"
+          fi
+        shell: bash
+
   update:
+    needs: check
+    if: needs.check.outputs.updated == 'true'
     runs-on: ubuntu-latest
     steps:
       - name: Check out Repository
@@ -19,10 +56,26 @@ jobs:
         uses: davidB/rust-cargo-make@v1
       
       - name: Update types
-        run: makers download-api-dump
+        run: cargo make download-api-dump
+
+      - name: Configure git
+        run: |
+          git config --global user.name 'Automated Updates'
+          git config --global user.email 'corecii@users.noreply.github.com'
 
       - name: Update package
         run: remodel run update-package.remodel.lua
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push changes
+        run: |
+          git add -A
+          git commit -m "Update to v{{ env.PACKAGE_VERSION }}"
+          git tag -fa v{{ env.PACKAGE_VERSION }} -m "auto-update"
+          git tag -fa latest-v1 -m "auto-update to v{{ env.PACKAGE_VERSION }}"
+          git push
+          git push origin latest-v1 -f
 
       - name: Set variables
         run: |
@@ -33,12 +86,27 @@ jobs:
           echo "PREV_PACKAGE_VERSION=$PREV_PACKAGE_VERSION" >> $GITHUB_ENV
       
       - name: Update release
-        run: gh release edit latest --tag latest-v1 --target automatic-updates
+        run: gh release edit latest-v1 --tag latest-v1 --target automatic-updates --title "Latest (v${{ env.PACKAGE_VERSION }})"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
       - name: Build library
         run: rojo build -o ApiDumpStatic.rbxm default.project.json
         
       - name: Upload release asset
         run: gh release upload latest-v1 ApiDumpStatic.rbxm --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Log in to wally
+        env:
+          WALLY_AUTH: ${{ secrets.WALLY_AUTH }}
+        run: |
+          mkdir ~/.wally
+          printenv WALLY_AUTH > ~/.wally/auth.toml
+
+      - name: Push update to wally
+        run: wally publish
+          
 
           
